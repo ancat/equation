@@ -709,6 +709,8 @@ module Equation
             base *= k.operand.value(ctx: ctx)
           when '/'
             base /= k.operand.value(ctx: ctx)
+          when '%'
+            base %= k.operand.value(ctx: ctx)
         end
       end
 
@@ -760,17 +762,29 @@ module Equation
               r7 = SyntaxNode.new(input, (index-1)...index) if r7 == true
               r5 = r7
             else
-              @index = i5
-              r5 = nil
+              if (match_len = has_terminal?('%', false, index))
+                r8 = true
+                @index += match_len
+              else
+                terminal_parse_failure('\'%\'')
+                r8 = nil
+              end
+              if r8
+                r8 = SyntaxNode.new(input, (index-1)...index) if r8 == true
+                r5 = r8
+              else
+                @index = i5
+                r5 = nil
+              end
             end
           end
           s3 << r5
           if r5
-            r8 = _nt_space
-            s3 << r8
-            if r8
-              r9 = _nt_standalone
-              s3 << r9
+            r9 = _nt_space
+            s3 << r9
+            if r9
+              r10 = _nt_standalone
+              s3 << r10
             end
           end
         end

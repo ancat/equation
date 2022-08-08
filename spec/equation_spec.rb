@@ -38,6 +38,9 @@ RSpec.describe EquationEngine do
       expect(parser.eval(rule: '1 - -1')).to eq 2
       expect(parser.eval(rule: '1 - 1 - 1')).to eq -1
       expect(parser.eval(rule: '1 + 1 + 1')).to eq 3
+      expect(parser.eval(rule: '1 + 2 * 2')).to eq 5
+      expect(parser.eval(rule: '5 % 2')).to eq 1
+      expect(parser.eval(rule: '1 + 5 % 5')).to eq 1
     end
 
     it 'does string comparisons' do
@@ -76,6 +79,32 @@ RSpec.describe EquationEngine do
       parser = described_class.new(default: {age: 9, name: "Dumpling"}, methods: {random: ->() { 4 }})
       expect(parser.eval(rule: 'random() == 4')).to eq true
       expect(parser.eval(rule: 'random()')).to eq 4
+    end
+
+    it 'executes methods with arguments' do
+      parser = described_class.new(default: {age: 9, name: "Dumpling"}, methods: {reverse: ->(s) { s.reverse }})
+      expect(parser.eval(rule: 'reverse($name)')).to eq "gnilpmuD"
+      expect(parser.eval(rule: 'reverse("hello")')).to eq "olleh"
+    end
+  end
+
+  context 'with comparisons' do
+    it 'does ands' do
+      parser = described_class.new(default: {age: 9, name: "OMAR"})
+      expect(parser.eval(rule: '$age == 9 && $name == "OMAR"')).to eq true
+      expect(parser.eval(rule: '$age == "impossible" && $name == "OMAR"')).to eq false
+    end
+
+    it 'does ors' do
+      parser = described_class.new(default: {age: 9, name: "OMAR"})
+      expect(parser.eval(rule: '$age == "impossible" || $name == "OMAR"')).to eq true
+      expect(parser.eval(rule: '$age == "impossible" || $name == "wrong"')).to eq false
+      expect(parser.eval(rule: '$age == "impossible" || 10')).to eq 10
+    end
+
+    it 'follows precedence rules' do
+      parser = described_class.new(default: {age: 9, name: "OMAR"})
+      expect(parser.eval(rule: '$age == "impossible" && $name == "OMAR" || 10')).to eq 10
     end
   end
 end

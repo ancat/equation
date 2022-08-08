@@ -96,7 +96,7 @@ grammar Equation
   rule multitive
     head:standalone
     tail:(
-      space operator:('*' / '/')
+      space operator:('*' / '/' / '%')
       space operand:standalone
     )* {
       def value(ctx:)
@@ -107,6 +107,8 @@ grammar Equation
               base *= k.operand.value(ctx: ctx)
             when '/'
               base /= k.operand.value(ctx: ctx)
+            when '%'
+              base %= k.operand.value(ctx: ctx)
           end
         end
 
