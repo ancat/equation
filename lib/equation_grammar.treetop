@@ -1,0 +1,231 @@
+grammar Equation
+  rule expression
+    logical / comparison / additive / standalone
+  end
+
+  rule logical
+    lhs:(boolean_and / additive) space
+    tail:(
+      operator:('||') space
+      rhs:(boolean_and / additive) space
+    )* {
+      def value(ctx:)
+        base = lhs.value(ctx: ctx)
+        tail.elements.each do |k|
+          case k.operator.text_value
+            when '||'
+              base ||= k.rhs.value(ctx: ctx)
+            end
+          end
+
+        base
+      end
+    }
+  end
+
+  rule boolean_and
+    lhs:(comparison / additive) space
+    tail:(
+      operator:('&&') space
+      rhs:(comparison / additive) space
+    )*  {
+      def value(ctx:)
+        base = lhs.value(ctx: ctx)
+        tail.elements.each do |k|
+          case k.operator.text_value
+            when '&&'
+              base &&= k.rhs.value(ctx: ctx)
+          end
+        end
+
+        base
+      end
+    }
+  end
+
+  rule comparison
+    lhs:(additive) space
+    operator:('in' / '<=' / '<' / '>=' / '>' / '==' / '!=' / '=~') space
+    rhs:(additive) space {
+      def value(ctx:)
+        case operator.text_value
+          when 'in'
+            return rhs.value(ctx: ctx).include?(lhs.value(ctx: ctx))
+          when '<='
+            return lhs.value(ctx: ctx) <= rhs.value(ctx: ctx)
+          when '<'
+            return lhs.value(ctx: ctx) < rhs.value(ctx: ctx)
+          when '>='
+            return lhs.value(ctx: ctx) >= rhs.value(ctx: ctx)
+          when '>'
+            return lhs.value(ctx: ctx) > rhs.value(ctx: ctx)
+          when '=='
+            return lhs.value(ctx: ctx) == rhs.value(ctx: ctx)
+          when '!='
+            return lhs.value(ctx: ctx) != rhs.value(ctx: ctx)
+          when '=~'
+            expression = Regexp.new rhs.value(ctx: ctx)
+            return !(lhs.value(ctx: ctx) =~ expression).nil?
+        end
+      end
+    }
+  end
+
+  rule additive
+    head:multitive
+    tail:(
+      space operator:('+' / '-')
+      space operand:multitive
+    )* {
+      def value(ctx:)
+        base = head.value(ctx: ctx)
+        tail.elements.each do |k|
+          case k.operator.text_value
+            when '+'
+              base += k.operand.value(ctx: ctx)
+            when '-'
+              base -= k.operand.value(ctx: ctx)
+          end
+        end
+
+        base
+      end
+    }
+  end
+
+  rule multitive
+    head:standalone
+    tail:(
+      space operator:('*' / '/')
+      space operand:standalone
+    )* {
+      def value(ctx:)
+        base = head.value(ctx: ctx)
+        tail.elements.each do |k|
+          case k.operator.text_value
+            when '*'
+              base *= k.operand.value(ctx: ctx)
+            when '/'
+              base /= k.operand.value(ctx: ctx)
+          end
+        end
+
+        base
+      end
+    }
+  end
+
+  rule standalone
+    symbol /
+    method_call /
+    literals /
+    subexpression
+  end
+
+  rule subexpression
+    '(' expression ')' {
+      def value(ctx:)
+        expression.value(ctx: ctx)
+      end
+    }
+  end
+
+  rule method_call
+    root:([a-zA-Z] [a-zA-Z0-9_]*)
+      '('
+      space
+      args:(
+        arg0:expression?
+        space
+        argN:(space ',' space expression)*
+      )?
+      ')' {
+    def value(ctx:)
+      arguments = []
+      arguments << args.arg0.value(ctx: ctx) if args.arg0.respond_to?(:value)
+      args.argN.elements.each{|argN|
+        arguments << argN.elements[3].value(ctx: ctx) if args.arg0.respond_to?(:value)
+      }
+
+      ctx.call(method: root.text_value, args: arguments)
+    end
+    }
+  end
+
+  rule literals
+    array_literal / nil_literal / boolean_literal / string_literal / range_literal / numeric_literal
+  end
+
+  rule string_literal
+    ('"' string:( !'"' . )*  '"') <StringLiteral> {
+      def value(ctx:)
+        string.text_value
+      end
+    }
+  end
+
+  rule numeric_literal
+    numeric:('-'? ([0-9])+ ('.' [0-9]+)?) <NumericLiteral> {
+      def value(ctx:)
+        numeric.text_value.to_f
+      end
+    }
+  end
+
+  rule boolean_literal
+    boolean:("true" / "false") <BooleanLiteral> {
+      def value(ctx:)
+        boolean.text_value == "true"
+      end
+    }
+  end
+
+  rule nil_literal
+    nil:('nil' / 'null') <NilLiteral> {
+      def value(ctx:)
+        nil
+      end
+    }
+  end
+
+  rule array_literal
+    '[' space
+    space
+    elems:(
+      elem0:standalone?
+      space
+      elemN:(space ',' space element:standalone)*
+    )?
+    ']' <ArrayLiteral> {
+      def value(ctx:)
+        elements = []
+        elements << elems.elem0.value(ctx: ctx) if elems.elem0.respond_to?(:value)
+        elems.elemN.elements.each{|elemN|
+          elements << elemN.element.value(ctx: ctx)
+        }
+
+        elements
+      end
+    }
+  end
+
+  rule range_literal
+    start:numeric_literal operator:'..' ending:numeric_literal <RangeLiteral> {
+      def value(ctx:)
+        Range.new(start.text_value.to_i, ending.text_value.to_i)
+      end
+    }
+  end
+
+  rule symbol
+    '$' root:([a-zA-Z] [a-zA-Z0-9_]*) path:(('.' [a-zA-Z0-9_]+)*)  {
+      def value(ctx:)
+        ctx.get(identifier: root.text_value, path: path.elements)
+      end
+    }
+  end
+
+  rule space
+    [ \t\n\r]*
+  end
+end
