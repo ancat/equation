@@ -10,6 +10,7 @@ Use cases include:
 
 Modeled loosely after [Symfony Expression Language](https://symfony.com/doc/current/components/expression_language.html).
 
+
 ## Example
 
 In this example, we'll use a rule to determine whether a request should be dropped or not. While the rule here is hardcoded into the program, it could just as easily be pulled from a database, some redis cache, etc instead. Rules can also be cached, saving you an extra parsing step.
@@ -79,3 +80,9 @@ is_even($age) # true
 $name == "Dumpling" && $age >= 12
 $name in ["Dumpling", "Meatball"] || $age == 12
 ```
+
+## Development
+
+* To work on the expression language itself, take a look at `lib/equation_grammar.treetop`. Equation is built using [treetop](https://cjheath.github.io/treetop/).
+* Run `bundle exec rake build_grammar` to generate the corresponding parser Ruby code.
+* Run `bundle exec rake spec` to run tests.
