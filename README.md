@@ -29,3 +29,53 @@ if suspicious_request
   # log some things, notify some people
 end
 ```
+
+## Language Features
+
+Because Equation is modeled after [Symfony Expression Language](https://symfony.com/doc/current/components/expression_language/syntax.html), it supports a lot of the same features. For a more exhaustive list, check out the [tests](https://github.com/ancat/equation/blob/main/spec/equation_spec.rb).
+
+### Literals
+
+* Strings: double quotes, e.g. `"hello world"`
+* Numbers: all treated as floats, e.g. `0`, `-10`, `0.5`
+* Arrays: square brackets, e.g. `[403, 404]` or `["yes", "no", "maybe"]`; can be mixed types
+* Booleans: `true`, `false`
+* Null: `nil`
+
+### Variables
+
+Variables are only made available to the engine at initialization. For example, given this setup code:
+
+```ruby
+engine = EquationEngine.new(default: {name: "OMAR", age: 12})
+```
+
+These variables and all their properties are accessible from within rules:
+
+```
+$name == "OMAR" # true
+$name.length    # 4
+$name.reverse   # RAMO
+```
+
+### Methods
+
+Like variables, methods are only made available to the engine at initialization. They can take any number and type of arguments, including variables or return values from other methods.
+
+```ruby
+engine = EquationEngine.new(default: {age: 12}, methods: {is_even: ->(n) {n%2==0}})
+```
+
+`is_even` can now be called as follows:
+
+```
+is_even(5)    # false
+is_even($age) # true
+```
+
+### Comparisons
+
+```
+$name == "Dumpling" && $age >= 12
+$name in ["Dumpling", "Meatball"] || $age == 12
+```
