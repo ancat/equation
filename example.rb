@@ -19,6 +19,6 @@ engine = EquationEngine.new(
   }
 )
 
-puts engine.eval(
+puts engine.parse_and_eval(
   rule: ARGV[0]
 )

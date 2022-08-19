@@ -3,20 +3,21 @@ require_relative 'equation_node_classes'
 require_relative 'equation_grammar'
 
 class Context
+  attr_accessor :transient_symbols
+
   def initialize(default: {}, methods: {})
     @symbol_table = default
+    @transient_symbols = {}
     @methods = methods
   end
 
-  def set(identifier:, value:)
-    @symbol_table[identifier.to_sym] = value
+  def symbols
+    @symbol_table.merge(@transient_symbols)
   end
 
   def get(identifier:, path: {})
     assert_defined!(identifier: identifier)
-    @symbol_table[identifier.to_sym]
-    root = @symbol_table[identifier.to_sym]
-    child = root
+    child = symbols[identifier.to_sym]
     path.each{|segment|
       segment_name = segment.elements[1].text_value.to_sym
       if child.respond_to?(segment_name)
@@ -38,7 +39,7 @@ class Context
 
   private
   def assert_defined!(identifier:)
-    raise "Undefined variable: #{identifier}" unless @symbol_table.has_key?(identifier.to_sym)
+    raise "Undefined variable: #{identifier}" unless symbols.has_key?(identifier.to_sym)
   end
 
   def assert_method_exists!(method:)
@@ -47,6 +48,8 @@ class Context
 end
 
 class EquationEngine
+  attr_accessor :parser, :context
+
   def initialize(default: {}, methods: {})
     @parser = EquationParser.new
     @context = Context.new(default: default, methods: methods)
@@ -59,10 +62,17 @@ class EquationEngine
     parsed_rule
   end
 
-  def eval(rule:)
-    parsed_rule = @parser.parse(rule)
-    raise "Parse Error: #{rule}" unless parsed_rule
+  def parse_and_eval(rule:)
+    parse(rule: rule).value(ctx: @context)
+  end
 
-    parsed_rule.value(ctx: @context)
+  def eval(rule:)
+    rule.value(ctx: @context)
+  end
+
+  def eval_with(rule:, values: {})
+    rule.value(ctx: @context.tap { |x|
+      x.transient_symbols = values
+    })
   end
 end
