@@ -55,6 +55,16 @@ RSpec.describe EquationEngine do
       expect(parser.eval(rule: '"GARBAGE" =~ "^G"')).to eq true
       expect(parser.eval(rule: '"127.0.0.1" =~ "^([0-9]{1,3}\.){3}[0-9]{1,3}$"')).to eq true
     end
+
+    it 'handles negations' do
+      parser = described_class.new
+      expect(parser.eval(rule: '!false')).to eq true
+      expect(parser.eval(rule: '!!false')).to eq false
+      expect(parser.eval(rule: '!1')).to eq false
+      expect(parser.eval(rule: '!!1')).to eq true
+      expect(parser.eval(rule: '!!!!!!!!1')).to eq true
+      expect(parser.eval(rule: '!(1 == 2)')).to eq true
+    end
   end
 
   context 'with valid input and a populated environment' do

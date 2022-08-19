@@ -118,10 +118,17 @@ grammar Equation
   end
 
   rule standalone
-    symbol /
-    method_call /
-    literals /
-    subexpression
+    negate:'!'*
+    unit:(symbol / method_call / literals / subexpression) {
+      def value(ctx:)
+        base = unit.value(ctx: ctx)
+        negate.text_value.length.times {
+          base = !base
+        }
+
+        base
+      end
+    }
   end
 
   rule subexpression

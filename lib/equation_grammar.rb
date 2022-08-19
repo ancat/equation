@@ -818,6 +818,27 @@ module Equation
     r0
   end
 
+  module Standalone0
+    def negate
+      elements[0]
+    end
+
+    def unit
+      elements[1]
+    end
+  end
+
+  module Standalone1
+    def value(ctx:)
+      base = unit.value(ctx: ctx)
+      negate.text_value.length.times {
+        base = !base
+      }
+
+      base
+    end
+  end
+
   def _nt_standalone
     start_index = index
     if node_cache[:standalone].has_key?(index)
@@ -829,32 +850,61 @@ module Equation
       return cached
     end
 
-    i0 = index
-    r1 = _nt_symbol
-    if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
-      r0 = r1
-    else
-      r2 = _nt_method_call
-      if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
-        r0 = r2
+    i0, s0 = index, []
+    s1, i1 = [], index
+    loop do
+      if (match_len = has_terminal?('!', false, index))
+        r2 = true
+        @index += match_len
       else
-        r3 = _nt_literals
-        if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
-          r0 = r3
+        terminal_parse_failure('\'!\'')
+        r2 = nil
+      end
+      if r2
+        s1 << r2
+      else
+        break
+      end
+    end
+    r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+    s0 << r1
+    if r1
+      i3 = index
+      r4 = _nt_symbol
+      if r4
+        r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+        r3 = r4
+      else
+        r5 = _nt_method_call
+        if r5
+          r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+          r3 = r5
         else
-          r4 = _nt_subexpression
-          if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
-            r0 = r4
+          r6 = _nt_literals
+          if r6
+            r6 = SyntaxNode.new(input, (index-1)...index) if r6 == true
+            r3 = r6
           else
-            @index = i0
-            r0 = nil
+            r7 = _nt_subexpression
+            if r7
+              r7 = SyntaxNode.new(input, (index-1)...index) if r7 == true
+              r3 = r7
+            else
+              @index = i3
+              r3 = nil
+            end
           end
         end
       end
+      s0 << r3
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Standalone0)
+      r0.extend(Standalone1)
+    else
+      @index = i0
+      r0 = nil
     end
 
     node_cache[:standalone][start_index] = r0
