@@ -10,6 +10,9 @@ Use cases include:
 
 Modeled loosely after [Symfony Expression Language](https://symfony.com/doc/current/components/expression_language.html).
 
+## Demos
+
+Take a look at the examples directory for some demonstrations of Equation's capabilities. The main example is a [web application firewall](https://github.com/ancat/equation/tree/main/examples/rails_waf) for Rails; rules can be managed from any ActiveStorage compatible backend (e.g. filesystem, Amazon AWS, etc) and updated independently of application code, allowing for faster and more expressive blocking logic without having to wait for a deploy to go through.
 
 ## Example
 
