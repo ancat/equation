@@ -1,4 +1,6 @@
 require_relative 'lib/equation.rb'
+require "tty-prompt"
+require "pp"
 
 engine = EquationEngine.new(
   default: {
@@ -19,6 +21,16 @@ engine = EquationEngine.new(
   }
 )
 
-puts engine.parse_and_eval(
-  rule: ARGV[0]
-)
+pp(engine.context.symbols)
+prompt = TTY::Prompt.new
+
+while true do
+  input = prompt.ask("equation>")
+  begin
+    puts engine.parse_and_eval(
+      rule: input
+    )
+  rescue => e
+    puts "#{e}"
+  end
+end
