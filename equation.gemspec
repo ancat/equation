@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name = "equation"
-  s.version = "0.6.1"
+  s.version = "0.6.2"
   s.authors = ["OMAR"]
   s.summary = "A rules engine for your Ruby apps."
   s.description = "Equation exposes a minimal environment to allow safe execution of Ruby code represented via a custom expression language."
