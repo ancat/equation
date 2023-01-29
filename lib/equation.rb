@@ -19,13 +19,15 @@ class Context
     assert_defined!(identifier: identifier)
     child = symbols[identifier.to_sym]
     path.each{|segment|
-      segment_name = segment.elements[1].text_value.to_sym
-      if child.respond_to?(segment_name)
-        child = child.send(segment_name)
-      elsif child.include?(segment_name)
-        child = child[segment_name]
+      segment_name = segment.elements[1].text_value
+      if child.respond_to?(segment_name.to_sym)
+        child = child.send(segment_name.to_sym)
+      elsif child.is_a? Hash and child.include?(segment_name.to_sym)
+        child = child[segment_name.to_sym]
+      elsif child.is_a? Hash and child.include?(segment_name.to_s)
+        child = child[segment_name.to_s]
       else
-        raise "no"
+        return nil
       end
     }
 

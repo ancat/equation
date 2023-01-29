@@ -80,6 +80,19 @@ RSpec.describe EquationEngine do
       expect(engine.parse_and_eval(rule: '$name == "Dumpling"')).to eq true
     end
 
+    it 'retrieves values from hashes with symbol and string type keys' do
+      symbol_keys = {a: 123}
+      string_keys = {"a" => 456}
+      engine = described_class.new(default: {symbol: symbol_keys, string: string_keys})
+      expect(engine.parse_and_eval(rule: '$symbol.a == 123')).to eq true
+      expect(engine.parse_and_eval(rule: '$string.a == 456')).to eq true
+    end
+
+    it 'nonexistent keys return nil' do
+      engine = described_class.new(default: {empty_hash: {}})
+      expect(engine.parse_and_eval(rule: '$empty_hash.a == null')).to eq true
+    end
+
     it 'retrieves properties of variables' do
       engine = described_class.new(default: {age: 9, name: "Dumpling"})
       expect(engine.parse_and_eval(rule: '$name.length')).to eq 8
