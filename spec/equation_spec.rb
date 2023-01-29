@@ -2,6 +2,11 @@ require 'equation'
 
 RSpec.describe EquationEngine do
   context 'with valid input and an empty environment' do
+    it 'does not care about spaces' do
+      engine = described_class.new
+      expect(engine.parse_and_eval(rule: ' 1 ')).to eq 1.0
+    end
+
     it 'evals numeric literals' do
       engine = described_class.new
       expect(engine.parse_and_eval(rule: '1')).to eq 1.0
