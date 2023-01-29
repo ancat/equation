@@ -4,6 +4,7 @@ grammar Equation
   end
 
   rule logical
+    space
     lhs:(boolean_and / additive) space
     tail:(
       operator:('||') space

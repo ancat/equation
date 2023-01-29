@@ -71,16 +71,20 @@ module Equation
   end
 
   module Logical1
-    def lhs
+    def space1
       elements[0]
     end
 
-    def space
+    def lhs
       elements[1]
     end
 
-    def tail
+    def space2
       elements[2]
+    end
+
+    def tail
+      elements[3]
     end
   end
 
@@ -110,78 +114,82 @@ module Equation
     end
 
     i0, s0 = index, []
-    i1 = index
-    r2 = _nt_boolean_and
-    if r2
-      r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
-      r1 = r2
-    else
-      r3 = _nt_additive
-      if r3
-        r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
-        r1 = r3
-      else
-        @index = i1
-        r1 = nil
-      end
-    end
+    r1 = _nt_space
     s0 << r1
     if r1
-      r4 = _nt_space
-      s0 << r4
-      if r4
-        s5, i5 = [], index
-        loop do
-          i6, s6 = index, []
-          if (match_len = has_terminal?('||', false, index))
-            r7 = instantiate_node(SyntaxNode,input, index...(index + match_len))
-            @index += match_len
-          else
-            terminal_parse_failure('\'||\'')
-            r7 = nil
-          end
-          s6 << r7
-          if r7
-            r8 = _nt_space
-            s6 << r8
+      i2 = index
+      r3 = _nt_boolean_and
+      if r3
+        r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+        r2 = r3
+      else
+        r4 = _nt_additive
+        if r4
+          r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+          r2 = r4
+        else
+          @index = i2
+          r2 = nil
+        end
+      end
+      s0 << r2
+      if r2
+        r5 = _nt_space
+        s0 << r5
+        if r5
+          s6, i6 = [], index
+          loop do
+            i7, s7 = index, []
+            if (match_len = has_terminal?('||', false, index))
+              r8 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+              @index += match_len
+            else
+              terminal_parse_failure('\'||\'')
+              r8 = nil
+            end
+            s7 << r8
             if r8
-              i9 = index
-              r10 = _nt_boolean_and
-              if r10
-                r10 = SyntaxNode.new(input, (index-1)...index) if r10 == true
-                r9 = r10
-              else
-                r11 = _nt_additive
+              r9 = _nt_space
+              s7 << r9
+              if r9
+                i10 = index
+                r11 = _nt_boolean_and
                 if r11
                   r11 = SyntaxNode.new(input, (index-1)...index) if r11 == true
-                  r9 = r11
+                  r10 = r11
                 else
-                  @index = i9
-                  r9 = nil
+                  r12 = _nt_additive
+                  if r12
+                    r12 = SyntaxNode.new(input, (index-1)...index) if r12 == true
+                    r10 = r12
+                  else
+                    @index = i10
+                    r10 = nil
+                  end
+                end
+                s7 << r10
+                if r10
+                  r13 = _nt_space
+                  s7 << r13
                 end
               end
-              s6 << r9
-              if r9
-                r12 = _nt_space
-                s6 << r12
-              end
+            end
+            if s7.last
+              r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+              r7.extend(Logical0)
+            else
+              @index = i7
+              r7 = nil
+            end
+            if r7
+              s6 << r7
+            else
+              break
             end
           end
-          if s6.last
-            r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-            r6.extend(Logical0)
-          else
-            @index = i6
-            r6 = nil
-          end
-          if r6
-            s5 << r6
-          else
-            break
-          end
+          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          s0 << r6
         end
-        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-        s0 << r5
       end
     end
     if s0.last
