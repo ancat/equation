@@ -8,5 +8,4 @@ gem "treetop"
 gem "rspec"
 gem "rspec-core"
 gem "rake"
-
 gem "tty-prompt"
