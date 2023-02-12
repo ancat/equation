@@ -22,10 +22,6 @@ class Context
       segment_name = segment.elements[1].text_value
       if child.respond_to?(segment_name.to_sym)
         child = child.send(segment_name.to_sym)
-      elsif child.is_a? Hash and child.include?(segment_name.to_sym)
-        child = child[segment_name.to_sym]
-      elsif child.is_a? Hash and child.include?(segment_name.to_s)
-        child = child[segment_name.to_s]
       else
         return nil
       end
